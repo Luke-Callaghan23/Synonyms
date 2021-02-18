@@ -1,0 +1,163 @@
+{% load static %}
+{% include 'common_scripts.html' %}
+<script>
+    // Function that returns a function with a getSearchString function baked into it
+    //      returned function queries server on the string returned by getSearchString,
+    //      and replaces the DOM with the response from the server
+    // Because both refresh and interceptSubmit do the same exact thing, but with different
+    //      strings for the search bar, i've composed that functionality into a generic
+    //      function which uses another function as parameter
+    const queryServer = (getSearchString) => () => {
+        // Delete the old mappings from terms to their respective elements
+        //      because those will all be deleted
+        Object.getOwnPropertyNames(termsElements).forEach(term => {
+            delete termsElements[ term ]
+        })
+
+        refreshButton.classList.add('spin');
+
+        // Some timeout magic to make sure that the refresh button can at least spin
+        //      for a full rotations
+        // (I did NOT spend all that time animating it only for my server to be too fast
+        //      to get to watch the animation)
+        let gotResp = 1;
+        let turnOff = false;
+        setTimeout(() => {
+            turnOff = true;
+            if (gotResp === 0) {
+                refreshButton.classList.remove('spin');
+            }
+        }, 4000);
+
+        // Callback function for when a query was successful, depending on whether the query 
+        //      was for the single categories that the user searched, or the intersection
+        //      of those terms
+        // Returns a version of the response function with the string 'singles' or 'combinations'
+        //      baked in (see below)
+        const successCallback = (singleOrCombos) => (data) => {
+            if (document.getElementById(singleOrCombos).children.length == 0) {
+                // If the user hit the 'x' button over one of the main cateory headers, then we need to first re-add
+                //      the HTML for the outer box that holds that data
+                console.log(wrapper);
+                const div     = document.createElement('div');
+                div.innerHTML = `
+                    <div class="wrapper-wrapper" style="position: relative;" id="remove-container">
+                        <h1 class="wrapper-name box">
+                            ${singleOrCombos.capitalize()}
+                            <input type="button" onclick="remove(this); iso()" class="x down" value="X" style="top: 12px; right: 55px" />
+                            <input type="button" onclick="minimize(this); iso()" class="_ down" value="_" style="top: 12px; right: 85px" />
+                        </h1>
+                        <div id="minimize-container">
+                            <div class="categories-wrapper" id="categories-list-${singleOrCombos}">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                wrapper.insertAdjacentElement('afterbegin', div.children[0]);
+            }
+
+            iso();
+
+            // Getting the container for all the category items that the server just sent us
+            const categoriesList = (
+                document
+                    .getElementById(singleOrCombos)
+                    .querySelector(`#categories-list-${singleOrCombos}`)
+            );
+
+
+            // Remove the previous categories in DOM
+            while (categoriesList.firstChild) {
+                categoriesList.removeChild(categoriesList.lastChild);
+            }
+
+            // Take retrieved data from django, turn them into elements
+            //      in the 'node' variable
+            const placeholder = document.createElement('div');
+            placeholder.innerHTML = data;
+            const node = placeholder.childNodes;
+
+            // Executing the code in the script tag
+            eval(placeholder.querySelector('#new-categories')?.innerHTML);
+
+            // Insert the retrieved categories into the grid with 
+            //      isotope
+            $(`#categories-list-${singleOrCombos}`).isotope('insert', node);
+            
+            iso();
+        }
+
+        // Function to query the server for the single categories that the user has searched, or the 
+        //      combinations of those categories
+        // Returns a version of the query funtion with the 'singles' or 'combinations' string and the 
+        //      response callback (above) for singles or combinations queries
+        const query = (singleOrCombos, responseCallback) => () => {
+            // POST to the server
+            $.ajax({
+                type: 'POST',
+                url: `/said/view/search/${singleOrCombos}/`,
+                headers: {
+                    // Include the csrf token
+                    'X-CSRFToken': Cookies.get('csrftoken')
+                },
+                data: JSON.stringify({
+                    'categories': getSearchString().split(delimRegex).filter(x=>x),
+                    'add': false
+                }),
+            })
+            .then(responseCallback)
+            .fail(err => {
+                console.log(err)
+            })
+            .always(response => {
+                // Part 2 of timeout magic
+                gotResp--;
+                if (turnOff && gotResp === 0) {
+                    refreshButton.classList.remove('spin');
+                }
+            })
+            ;;
+        }
+
+        // Getting versions of the query function (above) for each the singles and combinations queries
+        const querySingles      = query('singles'     , successCallback('singles'));
+        const queryCombinations = query('combinations', successCallback('combinations'));
+
+        // Do a query for the single terms
+        querySingles();
+
+        if (document.getElementById('checkid').checked)
+        {
+            gotResp++;
+            // Do a query for the intersections of the single terms
+            queryCombinations();
+            
+            // Set the display of the combos container to visible, if we are querying 
+            //      combos
+            document
+                .getElementById('combinations')
+                .querySelector('#remove-container')
+                .style
+                .display = ''
+            ;;
+        }
+
+
+        // Return false (to prevent default)
+        return false;
+    }
+
+    // Gets an instance of the queryServer function (above), with a getSearchString
+    //      parameter that returns the most recent search to the server
+    const refresh = queryServer(() => {
+        return recentSearch
+    });
+
+    // Gets an instance of the queryServer funtion (above), with a getSearch string
+    //      parameter that is a function which will return the search bar string
+    //      and update the most recent search var
+    const interceptSubmit = queryServer(() => {
+        recentSearch = mainSearchBar.value;
+        return recentSearch;
+    });
+</script>

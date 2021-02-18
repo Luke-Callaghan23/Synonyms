@@ -1,0 +1,170 @@
+{% load static %}
+{% include 'common_scripts.html' %}
+<script>
+    // Array of all selected categories for the current term
+    const selected = [];
+    
+    // Adding keyup event to the main search bar to add / remove category elements from the 
+    //      chosen container depending on the text in the main search bar field
+    document.getElementById('main-search').addEventListener('keyup', (event) => {
+        // Getting the last character in the input element
+        const inputText = event.target.value;
+        const lastChar  = inputText.charAt(inputText.length - 1);
+    
+        if (delimiters.search(lastChar) > -1) {
+            // If the last key in the string is one of the delimiter characters (found in the
+            //      delimiter string in common_scripts.html), then we need to update the categories
+            //      in the "chosen" wrapper
+    
+            // Getting the string terms for all the selected categories, with all blank 
+            //      categories filtered out
+            const selectedPrime = inputText.split(delimRegex).filter(x=>x);
+    
+            // Finding the differences in the two sets to find the categories to add and
+            //      remove from the categories container
+            const categoriesToAdd    = selectedPrime.filter(x => !selected.includes(x));
+            const categoriesToRemove = selected.filter(x => !selectedPrime.includes(x));
+    
+            console.log('Add: ', categoriesToAdd);
+            console.log('Rem: ', categoriesToRemove);
+
+            // Adding elements
+            categoriesToAdd.forEach(add => {
+                addCategoryToChosen(add);
+            });
+
+            // Removing elements
+            categoriesToRemove.forEach(remove => {
+                removeCategoryFromChosen(remove);
+            });
+
+            console.log('Selected: ', selected);
+            console.log('');
+        }
+    });
+
+    // Onclick function for a category name click ... if the category is in the
+    //      container for chosen categories, we move it to the unchosen categories
+    //      container, and if the category was in the unchosen container we move it
+    //      to the categories container
+    // We also update the search string in the main search bar
+    const flipCategory = (category) => {
+        if (selected.includes(category)) 
+        {
+            // If the category string is in the list of selected categories,
+            //      remove the category element, and add it to unchosen
+            removeCategoryFromChosen(category);
+        }
+        else
+        {
+            // If the category string is not in the list of selected categories,
+            //      add the category element to the chosen container, and remove
+            //      it from the unchosen container
+            addCategoryToChosen(category);
+        }
+        reflectChanges();
+    }
+
+    // Function to refresh all categories for the current term, and get the most current
+    //      categories back from the server
+    const refreshCategories = () => {
+        
+        // Clear all data for the current term
+        clearCurrent();
+
+        // Getting the container for all the category items
+        const categoriesList = document.getElementById(`categories-list-categories`);
+
+        // Clear categories in DOM
+        while (categoriesList.firstChild) {
+            categoriesList.removeChild(categoriesList.lastChild);
+        }
+
+        saidSynQuery (
+            refreshButton, {
+                url: `/said/view/search/singles/`,
+                data: JSON.stringify ({
+                    'categories': [],    // querying for all categories
+                    'add': true
+                }),
+            }, ()=>{}
+        )
+    }
+
+    const submit  = document.getElementById('submit-button');
+    const tooltip = document.getElementById('plus-tooptip');
+
+    // Bind an event that will rotate the 'x' submit button to look like a plus
+    //      and change the tooltip text whenever a node is inserted into the chosen
+    //      list
+    $('#categories-list-chosen').bind("DOMNodeInserted", () => {
+        submit.style.transform = 'rotate(0deg)';
+        tooltip.innerHTML      = "Add categories for this term"
+    });
+
+    // Bind an event that will rotate the '+' submit button to look like an 'x'
+    //      and change the tooltip text whenever the chosen node list becomes 
+    //      empty
+    $('#categories-list-chosen').bind("DOMNodeRemoved", () => {
+        if (document.getElementById('categories-list-chosen').children.length === 1) {
+            submit.style.transform = 'rotate(45deg)';
+            tooltip.innerHTML      = "Skip this term";
+        }
+    });
+
+    const searchLabel = document.getElementById('main-search-form-label');
+    
+    // Function to intercept the submission of the main search form, and make out own post 
+    //      post to the server
+    const interceptSubmit = () => {
+
+        const submission = new Submit(term, [...selected]);
+        submission.do(refreshButton);
+
+        undos.splice(0, undos.length);
+
+        // Display the next term
+        nextTerm();
+
+        return false;
+    }
+
+    
+    const movedTerms = [];
+    // Functin to move a category from its currently displayed location
+    //      to a hidden area where it won't be deleted
+    const move = (element, term) => {
+        if (selected.includes(term)) {
+            // If the term being removed is selected, we need to remove
+            //      it from the selected array, then reflect the changes
+            //      in the main search string
+            selected.splice(selected.indexOf('{{ category }'), 1)
+            reflectChanges();
+        }
+        
+        // Add this term to the movedTerms array
+        movedTerms.push(term);
+        
+        // Remove element from DOM and from 
+        remove(element);
+        $('.categories-wrapper').isotope( 'remove', element );
+        
+        // Hide the element, so it doesn't get removed from the DOM
+        document
+            .getElementById('hiding-spot')
+            .insertAdjacentElement('beforeend', upRemove(element));
+        
+        if (Object.getOwnPropertyNames(categories).includes(term)) { 
+           // Add the term to the completer's vocab (the term would be)
+           //       removed if the 
+            completer.vocab.push(term);
+        }
+
+        // Reload all isotope containers
+        iso();
+        $('.categories-wrapper').isotope( 'reloadItems' );
+    }
+
+
+
+</script>

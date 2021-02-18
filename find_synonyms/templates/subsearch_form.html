@@ -1,0 +1,69 @@
+<div id="remove-container" class="search-result-box">
+    <input type="button" onclick="remove(this)" class="x" value="X" />
+    <input type="button" onclick="minimize(this)" class="_" value="_" />
+    <div class="form-container">
+        {% load static %}
+        <form method="POST"> {% csrf_token %}
+            {{ search_form }}{{ get_search.form }}
+            <input action="/search/" type="image" src="{% static "images/search_icon.png"  %}" class="search-item" style="width: 50px; border-radius: 30px;" />
+            <input action="/add/" type='submit' value='+' class="search-item" style="width: 50px" />
+        </form>
+    </div>
+    <div id="minimize-container">
+        {% if definitions %}
+        <div class="synonym-box">
+            <div style="padding-right: 30px;">
+                
+                {% for def in definitions %}
+                    <div id="remove-container">
+                        <h1 style="display: inline;">{{ forloop.counter }}.</h1>
+                        <div class="search-result-box" style="background-color: #43a7c6;">
+                            <h2><em>{{ def.part|title }} &mdash;</em></h2>
+                            <div class="nym-container def-container">
+                                {% for definition in def.definitions %}
+                                <p><div class="definition nym">
+                                    {{ definition|capfirst }}
+                                </div></p>
+                                {% endfor %}
+                            </div>
+                            {% if forloop.first %}
+                                <div id="minimize-container">
+                            {% else %}
+                                <div id="minimize-container" style="display: none;">
+                            {% endif %}
+
+                                {% if def.synonyms %}
+                                    <h2> Synonyms: </h2>
+                                    <div class="nym-container">
+                                        {% for synonym in def.synonyms %}
+                                        <div class="nym" onclick="searchNym(this, '{{ synonym }}')">
+                                            {{ synonym|title }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                
+                                {% if def.antonyms %}
+                                    <h2> Antonyms: </h2>
+                                    <div class="nym-container">
+                                        {% for antonym in def.antonyms %}
+                                        <div class="nym" onclick="searchNym(this, '{{ antonym }}')">
+                                            {{ antonym|title }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                            </div>
+                            <input type="button" onclick="remove(this)" class="x" value="X" />
+                            <input type="button" onclick="minimize(this)" class="_" value="_" />
+                        </div>
+                    </div>
+    
+        
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}   
+    </div>
+</div>

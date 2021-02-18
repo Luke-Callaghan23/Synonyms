@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Testing Multiple forms on the same page
+{% endblock title %}
+
+{% block content %}
+
+{% include 'searchbar.html' %}
+
+<style>
+    .form-container {
+        display: inline-block;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .search-item {
+        vertical-align: middle;
+        height: 50px;
+        border-radius: 25px;
+        background-color: white;
+        border-width: 3px;
+        border-style: solid;
+        border-color: grey;
+        font-size: xx-large;
+        text-align: center;
+        transition: 0.5s;
+        cursor: pointer;
+    }
+    .search-item:hover { 
+        background-color: #3f93aa; 
+    }
+    .sub-searchbar {
+        background: linear-gradient(
+            180deg, 
+            rgba(200,200,200,1) 0%, 
+            rgba(255,255,255,1) 10%, 
+            rgba(255,255,255,1) 70%, 
+            rgba(200,200,200,1) 100%
+        );
+    }
+    .search-result-box {
+        width: 96%;
+        border-style: solid;
+        border-width: 5px;
+        background-color: #add8e6;
+        border-color: #134563;
+        border-radius: 50px;
+        padding: 25px 20px 20px 25px;
+        margin-bottom: 20px
+    }
+    .synonym-box {
+        width: 100%;  
+        margin:auto; 
+        margin-top: 10px;
+        margin-bottom: 5px;
+        display: block;
+        padding: 0px 40px 0px 20px;
+    }
+    .synonym {
+        display:inline-block; 
+        border: 3px solid #134563; 
+        text-align: center; 
+        background-color: #cbe7ef;
+        padding: 7px 10px 7px 10px;
+        border-radius: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        font-weight:bold;
+        margin: 0px 3px 5px 0px;
+        cursor: pointer;
+        transition: 0.5s;
+    }
+    .synonym:hover {
+        background-color: #3f93aa;
+    }
+</style>
+<div>
+    <h1>Testing Multiple Forms: </h1>
+<div id="form-list">
+    <!-- Include a single form, first -->
+    {% include 'multi_forms/form.html' %}
+</div>
+
+{% endblock content %}
+
+{% block code %}
+<script>
+    // document.querySelectorAll('style,link[rel="stylesheet"]').forEach(item => item.remove())
+
+    const formContainer = document.getElementById('form-list')
+    
+    // 
+    const formCallback = (data, target, action) => {
+        if (action === '/search/')
+        {
+
+        }
+        else if (action === '/add/')
+        {
+            // When the submitted form was an /add/ form, insert the 
+            //      recieved data (HTML for another form) after this
+            //      form
+        }
+        target.parentNode.parentNode.insertAdjacentHTML('afterend', data)
+    }
+
+
+</script>
+{% endblock code %}

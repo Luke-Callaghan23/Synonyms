@@ -1,0 +1,59 @@
+{% for category, syns in categories.items %}
+    <div class="category-container box" id="remove-container">
+        <h2 
+            class="category-name box"
+            id="{{ category }}"
+            {% if add %}
+                onclick="flipCategory( '{{ category }}' )"
+                style="cursor: pointer;"
+            {% endif %}
+        > 
+            <div class="bound">
+                {{ category|title }} 
+            </div>
+        </h2>
+        <ul class="syn-list box" id="minimize-container">
+            {% for syn in syns %}
+                <li 
+                    class="syn" 
+                    onmouseover="hightlightTerms(this, '{{ syn }}')"
+                    onmouseout="unHightlightTerms(this, '{{ syn }}')" 
+                    id="{{ syn }}"
+                >
+                    {{ syn }}
+                </li>
+            {% endfor %}
+        </ul>
+        <input type="button" onclick="
+            // {% if add %}
+                move(this, '{{ category }}');
+            // {% else %}
+                remove(this); 
+            // {% endif %}
+            iso();
+        " class="x down" value="X" />
+        <input type="button" onclick="minimize(this); iso();" class="_ down" value="_" />
+    </div>
+    
+{% endfor %}
+
+
+<script id="new-categories">
+    // Taking all categories from django template and their associated list
+    //      of synonyms, and putting them in an object
+    
+    // {% if singles %}
+        categories 
+    // {% else %}
+        intersections
+    // {% endif %}
+    = {
+        //{% for category, syns in categories.items %}
+            '{{ category }}':[
+                // {% for syn in syns %}
+                '{{ syn }}',
+                // {% endfor %}
+            ],
+        //{% endfor %}
+    }
+</script>

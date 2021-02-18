@@ -1,0 +1,72 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+Add Said Synonyms
+{% endblock title %}
+
+{% block content %}
+
+{% include 'said_nav.html' %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main_css.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/view_said_categories.css' %}" />
+
+
+<div style="display: none;" id="add-view">
+    {% include 'add/popup.html' %}
+    {% include 'search_form.html' with main_search_form=main_search_form plus=True%}
+    <div id="wrapper-wrapper-container">
+
+        <div id="chosen">
+            <div class="wrapper-wrapper" style="position: relative;" id="remove-container">
+                <h1 class="wrapper-name box">
+                    Chosen Categories
+                </h1>
+                <div id="minimize-container">
+                    <div class="categories-wrapper" id="categories-list-chosen">
+                    </div>
+                </div>
+                <input type="button" onclick="minimize(this); iso()" class="_ down" value="_" style="top: 12px; right: 55px" />
+            </div>
+        </div>
+        
+        <div id="categories">
+            <div class="wrapper-wrapper" style="position: relative;" id="remove-container">
+                <h1 class="wrapper-name box">
+                    Existing Categories
+                </h1>
+                <div id="minimize-container">
+                    <div class="categories-wrapper" id="categories-list-categories">
+                        {% include 'category_list.html' with categories=categories singles=True add=True %}
+                    </div>
+                </div>
+                <input type="button" onclick="minimize(this); iso()" class="_ down" value="_" style="top: 12px; right: 55px" />
+            </div>
+        </div>
+    </div>
+    <div class="refresh-box">
+        <input 
+            type="image" 
+            src="{% static 'images/refresh.png' %}" 
+            onclick="modal.style.display = 'block'"
+            class="refresh" 
+            id="refresh"
+            value="" 
+        />
+    </div>
+</div>
+<div id="hiding-spot" style="display: none;"></div>
+
+{% include 'add/popup_tag.html' %}
+
+
+{% endblock content %}
+
+{% block code %}
+{% include 'add/add_synonyms_scripts.html' %}
+{% include 'add/helper_scripts.html' %}
+{% include 'add/file_view.html' %}
+{% include 'add/undo_redo_scripts.html' %}
+{% endblock code %}

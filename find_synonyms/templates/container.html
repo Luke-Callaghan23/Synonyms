@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Search Synonyms
+{% endblock title %}
+
+{% block content %}
+
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/main_css.css' %}" />
+
+{% include 'search_form.html' %}
+
+
+<input type="button" onclick="removeAll(this)" class="x" value="X" />
+<input type="button" onclick="minimizeAll(this)" class="_" value="_" />
+
+<div id="form-list">
+    {% if get_request_search %}
+        {% include 'subsearch_form.html' with search_form=get_request_search.search_form definitions=get_request_search.definitions %}
+    {% endif %} 
+</div>
+
+{% endblock content %}
+
+{% block code %}
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+<script>
+    // Elements used in the script 
+    const searchBar     = document.getElementById('main-search');       // main search bar
+    const searchForm    = document.getElementById('main-search-form');  // form for main search bar
+    const formContainer = document.getElementById('form-list')          // container for all sub-searches
+    
+    // Callback to be run when a form submit is called
+    const formCallback = (data, target, action) => {
+        console.log(target)
+        console.log(action)
+        if (target === searchForm) 
+        {
+            // When the target is the main, upper search form, just insert the HTML that we recieved as
+            //      the first item in the forms container
+            formContainer.insertAdjacentHTML('afterbegin', data)
+        }
+        else if (action === '/search/')
+        {
+            // When the action is a search, but not from the main search form, we replace the search form 
+            //      that was targeted with the recieved HTML
+
+            // Just creating a new div with its inner contents being the recieved
+            //      data
+            const replace = document.createElement('div');
+            replace.innerHTML = data;
+
+            // Replacing the targeted form with the new data
+            formContainer.replaceChild (
+                replace.firstChild,
+                target.parentNode.parentNode,
+            );
+        }
+        else if (action === '/add/')
+        {
+            // When the submitted form was an /add/ form, insert the 
+            //      recieved data (HTML for another form) after this
+            //      form
+
+            const div = document.createElement('div');
+            div.innerHTML = data;
+            const addedContent = div.firstChild;
+            target.parentNode.parentNode.insertAdjacentElement('afterend', addedContent);
+            addedContent.scrollIntoView();
+        }
+    };
+
+    // Function to intercept a submit specifically from the upper "Search a New Term . . ."
+    //      search bar ... this search bar is used to topen a new window if a term has 
+    //      already been searched by this 
+    const interceptSubmit = () => {
+        // Do nothing if the searchbar is empty
+        if (searchBar.value === '')
+        {
+            return false;
+        }
+        // If the search bar was already used, we open the new search term in a new
+        //      tab with the GET query searchterm=searchBar.value
+        if (document.getElementById('form-list').children.length > 0)
+        {
+            window.open(`.?searchterm=${searchBar.value}`);
+            return false;
+        }
+
+        // Otherwise, just send the event on through to
+        //      the ajax function found in ../../templates/base.html
+        return true;
+    };
+
+    // Function that is called whenever a user clicks on a synonym/anonyms
+    // This function queries that term in a POST request, and adds the 
+    //      term as a search underneath the term
+    const searchNym = (element, word) => {
+        // When a synonym of antonym is clicked, we do a post with that
+        //      term, and add the returned data directly below the term 
+        //      that was clicked
+        $.ajax({
+            type: 'POST',
+            url: './search/',
+            headers: {
+                // Include the csrf token
+                'X-CSRFToken': Cookies.get('csrftoken')
+            },
+            data: {
+                // Searched term is that parameter word
+                'search_bar': word,
+            },
+            success: (data) => {
+                formCallback (
+                    data, 
+                    // Go up from searched term until we get to the same
+                    //      level as the search bar
+                    element
+                        .parentNode
+                        .parentNode
+                        .parentNode
+                        .parentNode
+                        .parentNode
+                        .parentNode
+                    , 
+                    // 'action' is /add/
+                    '/add/'
+                );
+            }
+        })
+    };
+
+
+    // Function to remove all subsearches from the formContainer node,
+    //      called when the 'x' in the top upper corner is hit
+    const removeAll = (element) => {
+        while (formContainer.firstChild) {
+            formContainer.removeChild(formContainer.lastChild);
+        }
+    }
+    
+    // Variables used in the below function to track the most recent state
+    //      of minimization
+    let mins = [ '', 'none' ]
+    let minCount = 0;
+    // Function to minimize all subsearches from the formContainer node,
+    //      called when the '_' in the top upper corner is hit
+    const minimizeAll = (element) => {
+        minCount++;
+        console.log(mins[ minCount % 2 ])
+        formContainer.childNodes.forEach(node => { 
+            if (node.nodeType === 3) return;
+            const minimizeContainer = node.querySelector('#minimize-container');
+            minimizeContainer.style.display = mins[ minCount % 2 ];
+        });
+    }
+    
+</script>
+{% endblock code %}

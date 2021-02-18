@@ -1,0 +1,146 @@
+{% load static %}
+<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
+<script src="{% static 'js/autocomplete.js' %}"></script>
+<script>
+    // Function to calle the isotope thingy to align the categories in 
+    //      a jagged pattern.  Called whenever the categories list is updated in any way
+    const iso = () => 
+        $('.categories-wrapper').isotope({
+            itemSelector: '.category-container',
+            masonry: {
+                columnWidth: 100
+            }
+        });
+    iso();
+
+    // Variables for autocompletion
+    const delimiters = ' ,/\\|' 
+    const delimRegex = new RegExp(`[${delimiters}]`, 'g')
+    const completer  = new VocabCompleter(Object.keys(categories), delimiters)
+
+    // Event handler that will capture the 'tab' key down event, if the 
+    //      event occurred on a text box, will prevent the focus from 
+    //      shifting, and will enter autocompleted text
+    document.getElementById('main-search').addEventListener('keydown', (event) => {
+        if (event.keyCode === 9          && 
+            event.target.type === 'text' &&
+            event.target.getAttribute('autocompletable') === 'true'
+        ) {
+            event.preventDefault();                         // prevent bubbling of even
+            event.target.focus();                           // retain focus on the input element
+            event.target.value = completer.complete (       // autocomplete
+                event.target.value
+            )
+            return;
+        }
+
+    });
+
+    // Variables for the refresh button
+    let   recentSearch  = '';
+    const mainSearchBar = document.getElementById('main-search');
+    const refreshButton = document.getElementById('refresh');
+
+    // Object to hold a shortcut mapping from terms to the elements that represent all instances
+    //      of those terms in the DOM
+    // Used in the highlightTerms and unHighlightTerms function (below) to have quicker shortcut
+    //      to add and remove the .highlight class from terms without searching through
+    //      the DOM every time you need to do that
+    const termsElements = {}
+
+    // Function that is called whenever a user mouses over a term in one of
+    //      the category lists
+    // Function applies a highlighting effect to all terms in all categories
+    //      that match the term that the user has highlighted
+    const hightlightTerms = (element, term) => {
+        if (termsElements[ term ]) {
+            // If there exists a mapping for the highlighting term in the termsELements
+            //      array, then just apply the highlighting to all those elements
+            termsElements[ term ].forEach(element => {
+                element.classList.add('highlight');
+            });
+            // And then exit
+            return;
+        } 
+
+        // Function to apply the highlighting to all terms in a category
+        //      given by parameter category
+        const applyHighLight = (obj) => (category) => {
+            if (obj[ category ].includes(term)) {
+                // If the given object's mapping of the given category
+                //      contains the highlighting term
+
+                // Get the element
+                const termEle = document
+                    .getElementById(category)
+                    .parentNode
+                    .querySelector(`#${term}`)
+                ;;
+
+                // Get the array that corresponds to that term
+                //      in the termsEle objects
+                let eleArr = termsElements[ term ];
+                if (!eleArr) {
+                    // Or create one if it doesn't exist
+                    termsElements[ term ] = [];
+                    eleArr = termsElements[ term ];
+                }
+                // Add the element found above to the array
+                eleArr.push(termEle);
+
+                // Add the highlighting effect to the term
+                termEle
+                    .classList
+                    .add('highlight')
+                ;;
+            }
+        };
+
+        // Getting a version of the above function with the categories object baked in
+        const applyCategories = applyHighLight(categories);
+        
+        // Applying highlights to all the terms in the categories map that match
+        //      target term
+        const categoryKeys = Object.getOwnPropertyNames(categories);
+        categoryKeys.forEach(applyCategories);
+        
+        // happy indignant irritated surprised
+        
+        try  
+        {
+            // Doing the same as above for the intersections object:
+            // Nested in a try block because if the user has not requested any
+            //      intersections of combinations, the intersections object
+            //      will not yet exist, and will cause crashes
+            // And if the user is in the add synonyms page, then the intersections
+            //      object can never exist
+
+            // Getting a version of the above function with the intersectins object baked in
+            const applyIntersections = applyHighLight(intersections);
+
+            // Applying highlights to all the terms in the categories map that match
+            //      target term
+            const intersectionKeys = Object.getOwnPropertyNames(intersections);
+            intersectionKeys.forEach(applyIntersections);
+        } 
+        catch {}
+    }
+
+    // Function called whenever a user's mouse leaves a term in a category
+    //      list
+    // Function removes the highlighting effects from all terms that match
+    //      the terms that the mouse just left
+    const unHightlightTerms = (element, term) => {
+        console.log(term);
+
+        // Getting the list of all term elements that were highlighted
+        //      in the mouse over of this term
+        const elements = termsElements[ term ];
+        elements.forEach(element => {
+            // Removing the highlight class from the element
+            element.classList.remove('highlight');
+        });
+    }
+
+    
+</script>

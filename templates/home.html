@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Home Page
+{% endblock title %}
+
+{% block content %}
+
+<style>
+    .description-box {
+        margin-top: 15px;
+        padding-top: 25px;
+        padding-left: 25px;
+        display: inline-block;
+        width: 98%;
+        border-style: solid;
+        border-width: 5px;
+        background-color: #add8e6;
+        border-color: #134563;
+        border-radius: 50px;
+        padding-bottom: 25px;
+    }
+
+    .bullet-point {
+        font-size: x-large;
+    }
+
+    .link {
+        border-bottom: #09314b solid 3px;
+        color: #09314b;
+    }
+</style>
+
+<div class="description-box">
+    <ul>
+        <li><h1>Search Synonyms</h1></li>
+        <ul>
+            <li class="bullet-point">Search synonyms any words.</li>
+            <li class="bullet-point">Uses dictionary.com API.</li>
+            <li class="bullet-point">Multiple definitions per word.</li>
+            <li class="bullet-point">Multiple sub-searches.</li>
+        </ul>
+    </ul>
+</div>
+<div class="description-box">
+    <ul>
+        <li><h1>Said Synonyms</h1></li>
+        <ul>
+            <li class="bullet-point">Add and View synonyms to use instead of 'said'.</li>
+            <li class="bullet-point">View multiple categories and categorizations of 'said'.</li>
+            <li class="bullet-point">Categorize your own synonyms and add them to the django database.</li>
+        </ul>
+    </ul>
+</div>
+<div class="description-box">
+    <ul>
+        <li><h1>All built using django, Javascript, HTML, and CSS</h1></li>
+        <ul>
+            <li class="bullet-point">Source code at: '<b><a class="link" href="www.google.com">poopoopop.com</a></b>'</li>
+        </ul>
+    </ul>
+</div>
+
+{% endblock content %}

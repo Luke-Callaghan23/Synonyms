@@ -1,0 +1,76 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+View Said Synonyms
+{% endblock title %}
+
+{% block content %}
+
+
+{% include 'said_nav.html' %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main_css.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/view_said_categories.css' %}" />
+
+{% include 'search_form.html' %}
+<div id="wrapper-wrapper-container">
+
+    <div id="singles">
+        <div class="wrapper-wrapper" style="position: relative;" id="remove-container">
+            <h1 class="wrapper-name box">
+                Singles
+                <input type="button" onclick="remove(this); iso()" class="x down" value="X" style="top: 7px; right: 15px" />
+                <input type="button" onclick="minimize(this); iso()" class="_ down" value="_" style="top: 7px; right: 45px" />
+            </h1>
+            <div id="minimize-container">
+                <div class="categories-wrapper" id="categories-list-singles">
+                    {% include 'category_list.html' with categories=categories singles=singles %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="combinations">
+        <div 
+            class="wrapper-wrapper" 
+            style="
+                position: relative;
+                display: 
+                    /* {% if not combinations %}  */
+                        none 
+                    /* {% endif %} */
+                ;
+            " 
+            id="remove-container"
+        >
+            <h1 class="wrapper-name box">
+                Combinations
+                <input type="button" onclick="remove(this); iso()" class="x" value="X" style="top: 7px; right: 15px" />
+                <input type="button" onclick="minimize(this); iso()" class="_" value="_" style="top: 7px; right: 45px" />
+            </h1>
+            <div id="minimize-container">
+                <div class="categories-wrapper" id="categories-list-combinations">
+                    {% include 'category_list.html' with categories=combinations singles=False %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="refresh-box">
+    <input 
+        type="image" 
+        src="{% static 'images/refresh.png' %}" 
+        onclick="refresh()" 
+        class="refresh" 
+        id="refresh"
+        value="" 
+    />
+</div>
+
+{% endblock content %}
+
+{% block code %}
+{% include 'view/view_synonyms_scripts.html' %}
+{% endblock code %}

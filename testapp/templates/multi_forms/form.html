@@ -1,0 +1,24 @@
+<div class="search-result-box">
+    <div class="form-container">
+        {% load static %}
+        <form method="POST"> {% csrf_token %}
+            {{ search_form }}
+            <input action="/search/" type="image" src="{% static "search_icon.png"  %}" class="search-item" style="width: 50px; border-radius: 30px;" />
+            <input action="/add/" type='submit' value='+' class="search-item" style="width: 50px" />
+        </form>
+    </div>
+    {% if other_stuff %}
+    <div class="synonym-box">
+        <div style="padding-right: 30px;">
+            
+            {% for synonym in other_stuff %}
+    
+                <div class="synonym">
+                    {{ synonym|title }}
+                </div>
+    
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}   
+</div>

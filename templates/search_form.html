@@ -1,0 +1,71 @@
+
+<div class="container" >
+    <h1 style="text-align: center; margin-top: -0px;">
+        {% for field in main_search_form %}
+            {%  if field.name == 'search_bar' %}
+                <div id="main-search-form-label">{{ field.label }}</div>
+            {%  endif %}
+        {% endfor %}
+    </h1>
+    <!-- Search a New Term . . . -->
+    <form 
+        action="" 
+        method="POST" 
+        id="main-search-form" 
+        class="line" 
+        style="
+            margin-top: 10px;
+        "
+    > {% csrf_token %}
+        <!-- {% for field in main_search_form %}
+            {{ field }}
+        {% endfor %} -->
+        {{ main_search_form.search_bar }}
+        {% if main_search_form.get_intersections %}
+            <div class="tooltip" style="top: -33px">
+                {{ main_search_form.get_intersections }}
+                <label for="checkid"> <b>{{ main_search_form.get_intersections.label }} </b></label>
+                <span class="tooltiptext noselect"> This may take a while!</span>
+            </div>
+        {% endif %}
+        {% load static %}
+        <input 
+            type="image" 
+            src="
+                {% if not plus %}
+                    {% static 'images/search_icon.png'  %}
+                {% else %}
+                    {% static 'images/plus.png'  %}
+                {% endif %}
+            " 
+            class="line-item search-button"
+            alt="submit"
+            action="/search/"
+            style="
+                margin-top: -5px;
+                /* {% if plus %} */
+                    width: 60px;
+                    height: 60px;
+                    margin-left: 10px;
+                    transform: rotate(45deg);
+                /* {% endif %} */
+            "
+            id="submit-button"
+            onclick="return interceptSubmit()"
+        />
+        <div class="tooltip" style="top: -33px">
+            {% if plus %}
+                <span 
+                    class="tooltiptext noselect"
+                    style="
+                        top: 8px;
+                        left: 75px;
+                        z-index: 1;
+                    "
+                    id="plus-tooptip"
+                    >Skip this term</span>
+            {% endif %}
+        </div>
+    </form>
+</div>
+

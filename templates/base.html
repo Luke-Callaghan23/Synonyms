@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+    <header>
+        <meta charset="utf-8">
+        <meta name="description" content="Synonym Database">
+        <meta name="author" content="Luke Callaghan">
+        <title>
+            {% block title %} Title goes here {% endblock title %}
+        </title>
+    </header>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <body>
+        {% include 'navbar.html' %}
+
+        {% block content %}
+            Content Goes here
+        {% endblock content %}
+    </body>
+    <style>
+        body {
+            background-color:#cbe7ef;
+            margin-right: 20px;
+            font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: #134563
+        }
+        a { 
+            text-decoration: none; 
+            color: #134563;
+        }
+        .table {
+            display: table;
+        }
+        .table-row { 
+            display:table-row; 
+        }
+        .table-cell { 
+            display:table-cell; 
+        }
+    </style>
+    <script>
+        // Attach a function to body that will capture all form submit events
+        $("body").on('submit', 'form', event => {
+            
+            // Don't actually send the POST to django
+            event.preventDefault();
+
+            // Link for the POST request is either the form's 'action' attribute
+            //      or the active element (the element that was clicked)'s 'action'
+            //      attribute, or an empty string
+            const action = (
+                $(this).attr('action') ??                       // form's 'action'
+                $(document.activeElement).attr('action') ??     // source element's 'action'
+                ''
+            );
+
+            // POST to the above URL with form data
+            $.ajax({
+                type: 'POST',
+                url: '.' + action,
+                data: $(event.target).serialize(),
+                success: (data) => {
+                    try {
+                        // On success, call formCallback with response data, and
+                        //      the form element that was submitted, and the action
+                        formCallback(data, event.target, action);
+                    } catch {}
+                }
+            })
+        });
+
+        // Little block of code to prevent the page from asking about form resubmition
+        if ( window.history.replaceState )
+        {
+            window.history.replaceState( null, null, window.location.href );
+        }
+
+
+        
+        const up = (target) => 
+            function recurse(ele) {
+                if (!ele) {
+                    return null;
+                }
+
+                if (ele.id === target) {
+                    return ele;
+                }
+
+                const targetEle = ele.querySelector(`#${target}`);
+                if (targetEle && targetEle.parentNode === ele) {
+                    return targetEle;
+                }
+
+                return recurse(ele.parentNode);
+            }
+        
+        const upRemove   = up('remove-container');
+        const upMinimize = up('minimize-container');
+
+
+        // Function that is called to remove a container when an 'x' button is hit
+        //      inside of that container
+        // This function targets the closest parent of the 'x' button whose id is 
+        //      'remove-container', and removes that element from its parent container
+        const remove = (element) => {
+            // Finding the remove container with the above function, and 
+            //      removing it
+            const removeContainer = upRemove(element);
+            if (removeContainer)
+            {
+                const parent = removeContainer.parentNode;
+                if (parent)
+                {
+                    parent.removeChild(removeContainer);
+                }
+            }
+
+        };
+
+        // Function to minimize the contents of a container when a '_' button is
+        //      hit inside of that container
+        // This function targets a 'minimizie container' under the same parent node
+        //      as the '_' and and changes its display to none
+        const minimize = (element) => {
+            // Finding the remove container with the above function, and 
+            //      removing it
+            const minimizeContainer = upMinimize(element);
+            if (minimizeContainer)
+            {
+                minimizeContainer.style.display = minimizeContainer.style.display === 'none' ? '' : 'none';
+            }
+        };
+
+
+        String.prototype.capitalize = function () {
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        }
+
+        Array.prototype.clear = function () {
+            return this.splice(0, this.length);
+        }
+    </script>
+
+    {% block code %}
+    {% endblock code %}
+</html>

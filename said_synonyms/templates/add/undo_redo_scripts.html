@@ -1,0 +1,160 @@
+{% load static %}
+
+<style>
+    .undo-box {
+        border-radius: 50%;
+        position: fixed;
+        bottom: 0px;
+        left: 0px;
+        width: 75px;
+        height: 75px;
+        border: 5px #134563 solid;
+        background-color: #add8e6;
+    }
+    .redo-box {
+        border-radius: 50%;
+        position: fixed;
+        bottom: 0px;
+        left: 83px;
+        width: 75px;
+        height: 75px;
+        border: 5px #134563 solid;
+        background-color: #add8e6;
+    }
+</style>
+<div class="undo-box">
+    <input 
+        type="image" 
+        src="{% static 'images/undo.png' %}" 
+        onclick="undo()"
+        class="refresh" 
+        id="undo"
+        value="" 
+    />
+<div class="redo-box">
+    <input 
+        type="image" 
+        src="{% static 'images/redo.png' %}" 
+        onclick="redo()"
+        class="refresh" 
+        id="redo"
+        value="" 
+    />
+<div>
+<script>
+    const undoButton  = document.getElementById('undo');
+    const redoButton  = document.getElementById('redo');
+    const undoWrapper = document.querySelector('.undo-box');
+    const redoWrapper = document.querySelector('.redo-box');
+
+    const dos   = []
+    const undos = []
+
+    class Submit {
+        constructor (term, categories) {
+            this.term       = term;
+            this.categories = categories;
+        }
+
+        do (spinElement, redo=true) {
+            
+            const skip = selected.length === 0 && redo;
+
+
+            // Make a query object depending on if there are any items
+            //      in the selected array
+            const query = (skip) 
+            ? {
+                url  : '/said/view/search/singles/',
+                data :  JSON.stringify ({
+                    categories: [],
+                    add: true,
+                })
+            } : {
+                url  : '/said/add/add/',
+                data :  JSON.stringify ({
+                    term: this.term.toLocaleLowerCase(),
+                    categories: this.categories
+                })
+            }
+
+            // Query the server with the above query object
+            saidSynQuery (
+                spinElement, 
+                query,
+                () => {
+                    // On callback, show a popup
+                    if (skip) {
+                        popupTag.show("Term skipped!", 'red');
+                    }
+                    else if (redo===true) {
+                        popupTag.show("Term successfully added to the server!", 'green');
+                    }
+                    else {
+                        popupTag.show("Redo succesful!", 'green');
+                    }
+                }
+            )
+            dos.push(this);
+            undoWrapper.style.backgroundColor = '';
+        }
+
+        undo () {
+            // Query the server at the remove URL, with the term string as data
+            saidSynQuery (
+                undoButton, {
+                    url: '/said/add/remove/',
+                    data: JSON.stringify({
+                        term: this.term.toLocaleLowerCase(),
+                    }),
+                },
+                () => {
+                    // On callback, show a popup
+                    popupTag.show("Undo successful!", 'red');
+
+                    this.categories.forEach(category => {
+                        addCategoryToChosen(category);
+                    });
+                    reflectChanges();
+                }
+            )
+            redoWrapper.style.backgroundColor = '';
+        }
+    }
+
+    // censured  certified chastised clucked
+    // chastised certified  censured clucked
+
+    const undo = () => {
+        if (dos.length > 0) {
+            const last = dos.pop();
+
+            if (dos.length === 0) {
+                undoWrapper.style.backgroundColor = '#888';
+            }
+
+            content.unshift(last.term);
+            nextTerm(false);
+            
+            last.undo();
+            undos.push(last);
+        }
+    }
+
+    const redo = () => {
+        if (undos.length > 0) {
+            const redo = undos.pop();
+            
+            if (undos.length === 0) {
+                redoWrapper.style.backgroundColor = '#888';
+            }
+            
+            redo.do(redoButton, false);
+            nextTerm();
+        }
+    }
+
+    undoWrapper.style.backgroundColor = '#888';
+    redoWrapper.style.backgroundColor = '#888';
+
+</script>

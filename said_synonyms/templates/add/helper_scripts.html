@@ -1,0 +1,243 @@
+<script>
+    
+    // Function to add a category element to the chosen container, and remove it from
+    //      the categories container
+    const addCategoryToChosen = (add) => {
+        // Pushing the item into the selected arrat
+        selected.push(add);
+
+        if (Object.getOwnPropertyNames(categories).includes(add)) {
+            // If the category that we're adding already exists in the categories 
+            //      object, then we just have to move the element from the 
+            //      categories list into the selected list
+
+            // Get the element to move
+            const element = (
+                document
+                    .getElementById (
+                        movedTerms.includes(add)
+                        ? 'hiding-spot'
+                        : 'categories'
+                    )
+                    .querySelector(`#${add}`)
+                    .parentNode
+            );
+
+            // Create a clone
+            const clone = element.cloneNode(true);
+
+            // Remove the element from the categories list container
+            $(`#categories-list-categories`).isotope('remove', element);
+            iso();
+
+            // Add the element to the selected list container
+            $(`#categories-list-chosen`).isotope('insert', clone);
+        } 
+        else {
+            const temp = document.createElement('div');
+            temp.innerHTML = `
+                <div class="category-container box" id="remove-container">
+                    <h2 
+                        class="category-name box"
+                        id="${add}"
+                    > 
+                        <div class="bound">
+                            ${add.capitalize()}
+                        </div>
+                    </h2>
+                    <ul class="syn-list box" id="minimize-container">
+                        <li 
+                            class="syn" 
+                            onmouseover="hightlightTerms(this, '${ term }')"
+                            onmouseout="unHightlightTerms(this, '${ term }')" 
+                            id="${ term }"
+                        >
+                            ${ term }
+                        </li>
+                    </ul>
+                    <input type="button" onclick="remove(this); iso()" class="x down" value="X" />
+                    <input type="button" onclick="minimize(this); iso()" class="_ down" value="_" />
+                </div>
+            `;
+            const element = temp.children;
+
+            // Add the element to the selected list container
+            $(`#categories-list-chosen`).isotope('insert', element);
+
+        }
+        completer.vocab = completer.vocab.filter(x => x !== add);
+    }
+
+    // Function to remove a category element from the chosen container, and add it back
+    //      to the categories container
+    const removeCategoryFromChosen = (remove) => {
+        // Removing the string from the selected list
+        selected.splice(selected.indexOf(remove), 1);
+
+        // Get the element from the chosen container
+        const element = (
+            document
+                .getElementById('chosen')
+                .querySelector(`#${remove}`)
+                .parentNode
+        );
+
+        if (Object.getOwnPropertyNames(categories).includes(remove)) 
+        {
+            // If the category that we're adding already exists in the categories 
+            //      object, then we need to insert a clone of the element into the 
+            //      categories container
+
+            // Create a clone
+            const clone = element.cloneNode(true);
+            
+            // Add the clone to the categories list container
+            $(`#categories-list-categories`).isotope('insert', clone);
+        
+            // Putting the term into the 
+            completer.vocab.push(remove);
+            completer.vocab.sort((a,b) => a.localeCompare(b));
+        } 
+        
+        // Remove the element from the chosen list container
+        $(`#categories-list-chosen`).isotope('remove', element);
+        iso();
+    }
+
+    // Function to reflect the changes of the selected array onto the 
+    //      text in the search bar
+    const reflectChanges = () => {
+        const search = document.getElementById('main-search');
+        search.value = selected.reduce((acc, item) => {
+            return `${acc} ${item}`
+        }, '');
+    }
+    
+    // General function to query the server, recieving: an element to spin (the refresh button,
+    //      or the undo button, or the redo button), a querying object (with url and data fields)l
+    //      and a callback to activate after the request
+    const saidSynQuery = (spinElement, queryObj, postPOSTCallback) => {
+
+        // Function to update the DOM with the retrieved data from django
+        const updateDOM = (data) => {
+            // Take retrieved data from django, turn them into elements
+            //      in the 'node' variable
+            const placeholder = document.createElement('div');
+            placeholder.innerHTML = data;
+            const node = placeholder.childNodes;
+    
+            // Getting the container for all the category items
+            const categoriesList = document.getElementById(`categories-list-categories`);
+    
+            // Clear categories in DOM
+            while (categoriesList.firstChild) {
+                categoriesList.removeChild(categoriesList.lastChild);
+            }
+    
+            // Clear out all data from the current term
+            clearCurrent();
+    
+            // Executing the code in the script tag -- (reseting the categories)
+            //      object
+            eval(placeholder.querySelector('#new-categories')?.innerHTML);
+    
+            // Insert the retrieved categories into the grid with 
+            //      isotope
+            $(`#categories-list-categories`).isotope('insert', node);
+    
+            iso();
+        }
+
+        // Queries will always POST and always include the csrf token
+        const stdQuery = {
+            type: 'POST',
+            headers: {
+                // Include the csrf token
+                'X-CSRFToken': Cookies.get('csrftoken')
+            }
+        };
+
+        // Final query includes the stdQuery and the parameter query object
+        const finalQuery = {
+            ...stdQuery,
+            ...queryObj
+        }
+
+        // Add the spin class the to refresh button
+        spinElement.classList.add('spin');
+
+        // Some timeout magic to make sure that the refresh button can at least spin
+        //      for a full rotations
+        // (I did NOT spend all that time animating it only for my server to be too fast
+        //      to get to watch the animation)
+        let gotResp = 1;
+        let turnOff = false;
+        setTimeout(() => {
+            turnOff = true;
+            if (gotResp === 0) {
+                spinElement.classList.remove('spin');
+            }
+        }, 4000);
+
+        // POST to the server
+        $.ajax(finalQuery)
+        .then((data) => {
+            // Call the parameter callback
+            updateDOM(data);
+            
+            completer.vocab = Object.getOwnPropertyNames(categories).map(x=>x)
+            postPOSTCallback();
+        })
+        .fail(err => {
+            console.log(err)
+        })
+        .always(response => {
+            gotResp--;
+            if (turnOff && gotResp === 0) {
+                spinElement.classList.remove('spin');
+            }
+        });
+    }
+
+    // Current offset into the term array, and the term string at that offset
+    let term  = '';
+
+    // Function to display the next term of the content array in the label above the 
+    //      main search bar, and to clear out all items from the chosen container
+    //      and the selected arrat
+    const nextTerm = (skip=true) => {
+        if (skip) {
+            content.splice(0, 1);
+        }
+        term = content[0];
+        searchLabel.innerHTML = `Add Synonym : ${term} . . . `;
+        clearCurrent();
+        
+        const terms = content.map(x=>x);
+        sessionStorage.setItem('saidSynonymContent', JSON.stringify(terms));
+    }
+
+    // Clear all data related to the current term from the chosen terms container, and the 
+    //      selected array
+    const clearCurrent = () => {
+        // Getting the container for all the old chosen categories
+        const chosenList = document.getElementById('categories-list-chosen');
+
+        // Clear the chosen categories in DOM
+        while (chosenList.firstChild) {
+            chosenList.removeChild(chosenList.lastChild);
+        }
+
+        // Clear the selected array
+        selected.splice(0, selected.length);
+        
+        // Clear the moved terms array
+        movedTerms.splice(0, movedTerms.length);
+
+        // Clear the string in the main search form
+        document.getElementById('main-search').value = '';
+
+    }
+
+
+</script>
