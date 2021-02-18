@@ -35,6 +35,241 @@
         }
 
     });
+     // Array of all selected categories for the current term
+     const selected = [];
+    
+    // Adding keyup event to the main search bar to add / remove category elements from the 
+    //      chosen container depending on the text in the main search bar field
+    document.getElementById('main-search').addEventListener('keyup', (event) => {
+        // Getting the last character in the input element
+        const inputText = event.target.value;
+        const lastChar  = inputText.charAt(inputText.length - 1);
+    
+        if (delimiters.search(lastChar) > -1) {
+            // If the last key in the string is one of the delimiter characters (found in the
+            //      delimiter string in common_scripts.html), then we need to update the categories
+            //      in the "chosen" wrapper
+    
+            // Getting the string terms for all the selected categories, with all blank 
+            //      categories filtered out
+            const selectedPrime = inputText.split(delimRegex).filter(x=>x);
+    
+            // Finding the differences in the two sets to find the categories to add and
+            //      remove from the categories container
+            const categoriesToAdd    = selectedPrime.filter(x => !selected.includes(x));
+            const categoriesToRemove = selected.filter(x => !selectedPrime.includes(x));
+    
+            console.log('Add: ', categoriesToAdd);
+            console.log('Rem: ', categoriesToRemove);
+
+            // Adding elements
+            categoriesToAdd.forEach(add => {
+                addCategoryToChosen(add);
+            });
+
+            // Removing elements
+            categoriesToRemove.forEach(remove => {
+                removeCategoryFromChosen(remove);
+            });
+
+            console.log('Selected: ', selected);
+            console.log('');
+        }
+    });
+
+
+    // Function to add a category element to the chosen container, and remove it from
+    //      the categories container
+    const addCategoryToChosen = (add) => {
+        // Pushing the item into the selected arrat
+        selected.push(add);
+
+        if (Object.getOwnPropertyNames(categories).includes(add)) {
+            // If the category that we're adding already exists in the categories 
+            //      object, then we just have to move the element from the 
+            //      categories list into the selected list
+
+            // Get the element to move
+            const element = (
+                document
+                    .getElementById (
+                        movedTerms.includes(add)
+                        ? 'hiding-spot'
+                        : 'categories'
+                    )
+                    .querySelector(`#${add}`)
+                    .parentNode
+            );
+
+            // Create a clone
+            const clone = element.cloneNode(true);
+
+            // Remove the element from the categories list container
+            $(`#categories-list-categories`).isotope('remove', element);
+            iso();
+
+            // Add the element to the selected list container
+            $(`#categories-list-chosen`).isotope('insert', clone);
+        } 
+        else {
+            const temp = document.createElement('div');
+            temp.innerHTML = `
+                <div class="category-container box" id="remove-container">
+                    <h2 
+                        class="category-name box"
+                        id="${add}"
+                    > 
+                        <div class="bound">
+                            ${add.capitalize()}
+                        </div>
+                    </h2>
+                    <ul class="syn-list box" id="minimize-container">
+                        <li 
+                            class="syn" 
+                            onmouseover="hightlightTerms(this, '${ term }')"
+                            onmouseout="unHightlightTerms(this, '${ term }')" 
+                            id="${ term }"
+                        >
+                            ${ term }
+                        </li>
+                    </ul>
+                    <input type="button" onclick="remove(this); iso()" class="x down" value="X" />
+                    <input type="button" onclick="minimize(this); iso()" class="_ down" value="_" />
+                </div>
+            `;
+            const element = temp.children;
+
+            // Add the element to the selected list container
+            $(`#categories-list-chosen`).isotope('insert', element);
+
+        }
+        completer.vocab = completer.vocab.filter(x => x !== add);
+    }
+
+    // Function to remove a category element from the chosen container, and add it back
+    //      to the categories container
+    const removeCategoryFromChosen = (remove) => {
+        // Removing the string from the selected list
+        selected.splice(selected.indexOf(remove), 1);
+
+        // Get the element from the chosen container
+        const element = (
+            document
+                .getElementById('chosen')
+                .querySelector(`#${remove}`)
+                .parentNode
+        );
+
+        if (Object.getOwnPropertyNames(categories).includes(remove)) 
+        {
+            // If the category that we're adding already exists in the categories 
+            //      object, then we need to insert a clone of the element into the 
+            //      categories container
+
+            // Create a clone
+            const clone = element.cloneNode(true);
+            
+            // Add the clone to the categories list container
+            $(`#categories-list-categories`).isotope('insert', clone);
+        
+            // Putting the term into the 
+            completer.vocab.push(remove);
+            completer.vocab.sort((a,b) => a.localeCompare(b));
+        } 
+        
+        // Remove the element from the chosen list container
+        $(`#categories-list-chosen`).isotope('remove', element);
+        iso();
+    }
+
+    // Function to reflect the changes of the selected array onto the 
+    //      text in the search bar
+    const reflectChanges = () => {
+        const search = document.getElementById('main-search');
+        search.value = selected.reduce((acc, item) => {
+            return `${acc} ${item}`
+        }, '');
+    }
+    
+
+     // Clear all data related to the current term from the chosen terms container, and the 
+    //      selected array
+    const clearCurrent = () => {
+        // Getting the container for all the old chosen categories
+        const chosenList = document.getElementById('categories-list-chosen');
+
+        // Clear the chosen categories in DOM
+        while (chosenList.firstChild) {
+            chosenList.removeChild(chosenList.lastChild);
+        }
+
+        // Clear the selected array
+        selected.splice(0, selected.length);
+        
+        // Clear the moved terms array
+        movedTerms.splice(0, movedTerms.length);
+
+        // Clear the string in the main search form
+        document.getElementById('main-search').value = '';
+
+    }
+
+    // Onclick function for a category name click ... if the category is in the
+    //      container for chosen categories, we move it to the unchosen categories
+    //      container, and if the category was in the unchosen container we move it
+    //      to the categories container
+    // We also update the search string in the main search bar
+    const flipCategory = (category) => {
+        if (selected.includes(category)) 
+        {
+            // If the category string is in the list of selected categories,
+            //      remove the category element, and add it to unchosen
+            removeCategoryFromChosen(category);
+        }
+        else
+        {
+            // If the category string is not in the list of selected categories,
+            //      add the category element to the chosen container, and remove
+            //      it from the unchosen container
+            addCategoryToChosen(category);
+        }
+        reflectChanges();
+    }
+
+    const movedTerms = [];
+    // Functin to move a category from its currently displayed location
+    //      to a hidden area where it won't be deleted
+    const move = (element, term) => {
+        if (selected.includes(term)) {
+            // If the term being removed is selected, we need to remove
+            //      it from the selected array, then reflect the changes
+            //      in the main search string
+            selected.splice(selected.indexOf('{{ category }'), 1)
+            reflectChanges();
+        }
+        
+        // Add this term to the movedTerms array
+        movedTerms.push(term);
+        
+        // Remove element from DOM and from 
+        remove(element);
+        $('.categories-wrapper').isotope( 'remove', element );
+        
+        // Hide the element, so it doesn't get removed from the DOM
+        document
+            .getElementById('hiding-spot')
+            .insertAdjacentElement('beforeend', upRemove(element));
+        
+        if (Object.getOwnPropertyNames(categories).includes(term)) { 
+           // Add the term to the completer's vocab (the term would be)
+           //       removed if the 
+            completer.vocab.push(term);
+        }
+
+        // Reload all isotope containers
+        iso();
+        $('.categories-wrapper').isotope( 'reloadItems' );
+    }
 
     // Variables for the refresh button
     let   recentSearch  = '';

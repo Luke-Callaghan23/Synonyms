@@ -58,6 +58,8 @@
 
             iso();
 
+            clearCurrent();  
+
             // Getting the container for all the category items that the server just sent us
             const categoriesList = (
                 document
@@ -115,12 +117,11 @@
                 if (turnOff && gotResp === 0) {
                     refreshButton.classList.remove('spin');
                 }
-            })
-            ;;
+            });
         }
 
         // Getting versions of the query function (above) for each the singles and combinations queries
-        const querySingles      = query('singles'     , successCallback('singles'));
+        const querySingles      = query('singles'     , successCallback('categories'));
         const queryCombinations = query('combinations', successCallback('combinations'));
 
         // Do a query for the single terms

@@ -3,10 +3,8 @@
         <h2 
             class="category-name box"
             id="{{ category }}"
-            {% if add %}
                 onclick="flipCategory( '{{ category }}' )"
                 style="cursor: pointer;"
-            {% endif %}
         > 
             <div class="bound">
                 {{ category|title }} 
@@ -25,15 +23,12 @@
             {% endfor %}
         </ul>
         <input type="button" onclick="
-            // {% if add %}
                 move(this, '{{ category }}');
-            // {% else %}
-                remove(this); 
-            // {% endif %}
             iso();
         " class="x down" value="X" />
         <input type="button" onclick="minimize(this); iso();" class="_ down" value="_" />
     </div>
+<div id="hiding-spot" style="display: none;"></div>
     
 {% endfor %}
 
