@@ -1,2 +1,2 @@
 release: python manage.py migrate
-web: gunicorn synonym-finder:app
+web: gunicorn synonyms.wsgi --log-files -
