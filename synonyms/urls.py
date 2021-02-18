@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from django.conf import settings
 
 
 app_name = 'homeapp'
@@ -26,5 +26,6 @@ urlpatterns = [
     path('', main_view, name='homeview'),
     path('synonyms/', include('find_synonyms.urls')),
     path('said/', include('said_synonyms.urls')),
-    path('test/', include('testapp.urls'))
+    path('test/', include('testapp.urls')),
+    
 ]
