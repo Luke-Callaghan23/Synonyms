@@ -74,7 +74,7 @@
                 url  : '/said/add/add/',
                 data :  JSON.stringify ({
                     term: this.term.toLocaleLowerCase(),
-                    categories: this.categories
+                    categories: this.categories.map(x=>x.toLocaleLowerCase())
                 })
             }
 

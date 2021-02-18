@@ -101,7 +101,7 @@
                     'X-CSRFToken': Cookies.get('csrftoken')
                 },
                 data: JSON.stringify({
-                    'categories': getSearchString().split(delimRegex).filter(x=>x),
+                    'categories': getSearchString().split(delimRegex).filter(x=>x).map(x=>x.toLocaleLowerCase()),
                     'add': false
                 }),
             })
