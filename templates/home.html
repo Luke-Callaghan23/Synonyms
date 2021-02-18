@@ -30,7 +30,7 @@ Home Page
         color: #09314b;
     }
 </style>
-
+{% load static %}
 <div class="description-box">
     <ul>
         <li><h1>Search Synonyms</h1></li>
@@ -39,6 +39,11 @@ Home Page
             <li class="bullet-point">Uses dictionary.com API.</li>
             <li class="bullet-point">Multiple definitions per word.</li>
             <li class="bullet-point">Multiple sub-searches.</li>
+            <li class="bullet-point">Search Synonyms Demo: 
+                <video controls style="width: 75%; margin: 30px 0 20px 40px;">
+                    <source src="{% static 'videos/search-synonyms.webm' %}" type="video/webm">
+                </video> 
+            </li>
         </ul>
     </ul>
 </div>
@@ -49,6 +54,16 @@ Home Page
             <li class="bullet-point">Add and View synonyms to use instead of 'said'.</li>
             <li class="bullet-point">View multiple categories and categorizations of 'said'.</li>
             <li class="bullet-point">Categorize your own synonyms and add them to the django database.</li>
+            <li class="bullet-point">View Synonyms Demo: 
+                <video controls style="width: 75%; margin: 30px 0 20px 40px;">
+                    <source src="{% static 'videos/view-categories.webm' %}" type="video/webm">
+                </video> 
+            </li>
+            <li class="bullet-point">Add Synonyms Demo: 
+                <video controls style="width: 75%; margin: 30px 0 20px 40px;">
+                    <source src="{% static 'videos/add-categories.webm' %}" type="video/webm">
+                </video> 
+            </li>
         </ul>
     </ul>
 </div>
