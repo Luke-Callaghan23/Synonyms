@@ -1,9 +1,11 @@
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from .forms import SubSearchForm, MainSearchForm
 from .scripts.query_api import query_and_translate
 from .scripts.clean_word import clean_word
 
 # The main view of this app
+@csrf_exempt
 def main_search_view (request, *args, **kwargs):
     print(request)
     print(request.POST)
@@ -28,6 +30,7 @@ def main_search_view (request, *args, **kwargs):
 #       found in request.POST[ 'search_bar' ], and will return rendered
 #       HTML for a subsearch_form
 # This POST is called when the user searches in a subsearch
+@csrf_exempt
 def search_term_view (request, *args, **kwargs):
     print('SEARCH')
     print(request)
@@ -45,6 +48,7 @@ def search_term_view (request, *args, **kwargs):
         
 # View that returns rendered HTML for a blank subsearch form
 # This POST is called when the user hits the '+' on a subsearch
+@csrf_exempt
 def add_view (request, *args, **kwargs):
     print('ADD')
     print(request)

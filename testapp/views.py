@@ -1,8 +1,9 @@
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from .forms import Form1, Form2, SimpleSearchForm
 
-
+@csrf_exempt
 def test_2_forms_view (request, *args, **kwargs):
     print(request)
     print(request.POST)
@@ -24,6 +25,7 @@ def test_2_forms_view (request, *args, **kwargs):
                 'Form': '2'
             })
 
+@csrf_exempt
 def test_multi_forms_view (request, *args, **kwargs):
     print(request)
     print(request.POST)
@@ -31,6 +33,7 @@ def test_multi_forms_view (request, *args, **kwargs):
         'search_form': SimpleSearchForm(None),
     })
 
+@csrf_exempt
 def test_multi_forms_search_view (request, *args, **kwargs):
     print('SEARCH')
 
@@ -56,6 +59,8 @@ def test_multi_forms_search_view (request, *args, **kwargs):
         'other_stuff': syns
     })
     
+
+@csrf_exempt
 def test_multi_forms_add_view (request, *args, **kwargs):
     print('ADD')
     return render(request, 'multi_forms/form.html', {

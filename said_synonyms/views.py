@@ -6,7 +6,9 @@ from .scripts.view_syns import get_intersections
 from .forms import SearchForm, AddForm
 from .models import Category, SaidSynonym
 
+from django.views.decorators.csrf import csrf_exempt
 # 'view/'
+@csrf_exempt
 def view_syns_view (request, *args, **kwargs):
     print(request)
     print(request.user)
@@ -21,6 +23,7 @@ def view_syns_view (request, *args, **kwargs):
 
 
 # 'view/search/singles/'
+@csrf_exempt
 def search_singles_view (request, body=None, *args, **kwargs):
     print(request)
 
@@ -45,6 +48,7 @@ def search_singles_view (request, body=None, *args, **kwargs):
     })
 
 # 'view/search/combinations/'
+@csrf_exempt
 def search_combinations_view (request, *args, **kwargs):
     print(request)
 
@@ -67,6 +71,7 @@ def search_combinations_view (request, *args, **kwargs):
 
 
 # 'add/'
+@csrf_exempt
 def add_syns_view (request, *args, **kwargs):
     print(request)
     print(request.user)
@@ -81,6 +86,7 @@ def add_syns_view (request, *args, **kwargs):
 
 
 # 'add/add/'
+@csrf_exempt
 def add_view (request, *args, **kwargs):
     print(request)
     print(request.user)
@@ -122,6 +128,7 @@ def add_view (request, *args, **kwargs):
     return search_singles_view(request, body=True)
 
 # 'add/remove/'
+@csrf_exempt
 def remove_view (request, *args, **kwargs):
     print(request)
     print(request.user)
