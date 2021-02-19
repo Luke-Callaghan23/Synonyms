@@ -14,7 +14,7 @@ class MainSearchForm (forms.Form):
             attrs={
                 'class': 'line-item search-bar',
                 'id': 'main-search',
-                'action': '/search/'
+                'action': '/synonyms/search/'
             },
         ),
         max_length=255
@@ -34,7 +34,7 @@ class SubSearchForm (forms.Form):
                 'placeholder': 'Search . . . ',
                 'class': 'search-item sub-searchbar',
                 'style': 'width: 500px',
-                'action': '/search/'
+                'action': '/synonyms/search/'
             }
         ),
         max_length=255
