@@ -5,8 +5,8 @@
         {% load static %}
         <form method="POST"> {% csrf_token %}
             {{ search_form }}{{ get_search.form }}
-            <input action="/synonyms/search/" type="image" src="{% static "images/search_icon.png"  %}" class="search-item" style="width: 50px; border-radius: 30px;" />
-            <input action="/synonyms/add/" type='submit' value='+' class="search-item" style="width: 50px" />
+            <input onclick="return subSearchSearch(this, '/search/')"  type="image" src="{% static "images/search_icon.png"  %}" class="search-item" style="width: 50px; border-radius: 30px;" />
+            <input onclick="return subSearchSearch(this, '/add/')"  type="button" value='+' class="search-item" style="width: 50px" />
         </form>
     </div>
     <div id="minimize-container">

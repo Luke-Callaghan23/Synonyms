@@ -34,7 +34,7 @@ class SubSearchForm (forms.Form):
                 'placeholder': 'Search . . . ',
                 'class': 'search-item sub-searchbar',
                 'style': 'width: 500px',
-                'action': '/synonyms/search/'
+                'id': 'sub-search'
             }
         ),
         max_length=255

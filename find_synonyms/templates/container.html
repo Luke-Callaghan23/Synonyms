@@ -132,6 +132,36 @@ Search Synonyms
         })
     };
 
+    
+
+    // Function that is called whenever a user clicks on subsearch button
+    // This function makes a POST request and will either add
+    //      term as a search underneath the term
+    const subSearchSearch = (element, type) => {
+        $.ajax({
+            type: 'POST',
+            url: '/synonyms' + type,
+            headers: {
+                // Include the csrf token
+                'X-CSRFToken': Cookies.get('csrftoken')
+            },
+            data: 
+                // Searched term is that parameter word
+                type === '/search/' && {'search_bar': element.parentNode.querySelector('#sub-search').value},
+            success: (data) => {
+                formCallback (
+                    data, 
+                    // Go up from searched term until we get to the same
+                    //      level as the search bar
+                    element.parentNode, 
+                    // 'action' is /add/
+                    type
+                );
+            }
+        })
+        return false;
+    };
+
 
     // Function to remove all subsearches from the formContainer node,
     //      called when the 'x' in the top upper corner is hit
