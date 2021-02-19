@@ -103,7 +103,7 @@ Search Synonyms
         //      that was clicked
         $.ajax({
             type: 'POST',
-            url: './search/',
+            url: '/synonym/search/',
             headers: {
                 // Include the csrf token
                 'X-CSRFToken': Cookies.get('csrftoken')
